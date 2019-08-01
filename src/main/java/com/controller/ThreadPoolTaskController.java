@@ -31,6 +31,23 @@ public class ThreadPoolTaskController {
 			}
 		}
 
-		return "执行线程" ;
+		return "线程池运行完成" ;
+	}
+
+	/**
+	 * 执行多线程
+	 * @return
+	 */
+	@RequestMapping(value="/thread/run")
+	@ResponseBody
+	public String runThread(){
+		String s = null ;
+		try{
+			s = threadPoolTaskService.testRunThread() ;
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+
+		return "多线程执行完成:" + s ;
 	}
 }
