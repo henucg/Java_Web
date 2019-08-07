@@ -41,13 +41,13 @@ public class ThreadPoolTaskController {
 	@RequestMapping(value="/thread/run")
 	@ResponseBody
 	public String runThread(){
-		String s = null ;
+		String s = "" ;
 		try{
-			s = threadPoolTaskService.testRunThread() ;
+			s = threadPoolTaskService.testRunThread(1000) ;
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 
-		return "多线程执行完成:" + s ;
+		return "多线程执行完成:</br>" + s ;
 	}
 }
