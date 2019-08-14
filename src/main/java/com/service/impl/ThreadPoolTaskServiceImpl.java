@@ -103,13 +103,91 @@ public class ThreadPoolTaskServiceImpl implements ThreadPoolTaskService {
 		// 线程全部执行完关闭线程池
 		executor.shutdown();
 
+		return getString(beginTime, successNum, errorNum);
+	}
+
+	@Override
+	public String testRunThread2(int size) throws Exception {
+		long beginTime = System.currentTimeMillis() ;
+
+		// 成功个数
+		AtomicInteger successNum = new AtomicInteger(0) ;
+		// 失败个数
+		AtomicInteger errorNum = new AtomicInteger(0) ;
+		// 保证子线程完成才执行主线程
+		CountDownLatch countDownLatch = new CountDownLatch(size) ;
+
+		ExecutorService threadPool = Executors.newFixedThreadPool(5) ;
+
+		/**
+		 * CompletionService用来保存线程池中每个线程执行的结果
+		 * 获取结果用CompletionService.take().get()
+		 * 这个方法不是同步的，而是异步的，那个线程先执行完就先获取哪个
+		 * 最终结果都保存在CompletionService中
+		 * 可根据结果回滚操作
+		 */
+		CompletionService service = new ExecutorCompletionService(threadPool) ;
+
+		Callable callable = new Callable() {
+			@Override
+			public Object call() throws Exception {
+
+				try {
+					Thread.sleep(10);
+
+					if (countDownLatch.getCount() == 500) {
+						throw new Exception("=================抛出异常==================");
+					}
+
+					successNum.getAndIncrement() ;
+				}catch (Exception e){
+					errorNum.getAndIncrement() ;
+					throw e ;
+				}finally {
+					countDownLatch.countDown();
+				}
+
+				return 1;
+			}
+		} ;
+
+		// 创建任务提交线程
+		for (int i=0;i<size;i++){
+			service.submit(callable);
+		}
+
+		countDownLatch.await();
+
+		// 关闭线程池
+		threadPool.shutdown();
+
+		// 获取所有的返回结果
+		try{
+			for (int i=0;i<size;i++){
+				System.out.println(service.take().get()) ;
+			}
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+
+		return getString(beginTime, successNum, errorNum);
+	}
+
+	/**
+	 * 输出
+	 * @param beginTime
+	 * @param successNum
+	 * @param errorNum
+	 * @return
+	 */
+	private String getString(long beginTime, AtomicInteger successNum, AtomicInteger errorNum) {
 		long endTime = System.currentTimeMillis() ;
 
 		StringBuilder sb = new StringBuilder("") ;
 		sb.append("开始时间：").append(DateSingleton.getDateformat().format(beginTime)).append("</br>")
-		.append("结束时间：").append(DateSingleton.getDateformat().format(endTime)).append("</br>")
-		.append("总耗时：").append((endTime - beginTime)/1000).append("秒</br>")
-		.append("成功：").append( successNum.get()).append("，失败：" + errorNum.get());
+				.append("结束时间：").append(DateSingleton.getDateformat().format(endTime)).append("</br>")
+				.append("总耗时：").append((endTime - beginTime)/1000).append("秒</br>")
+				.append("成功：").append( successNum.get()).append("，失败：" + errorNum.get());
 		return sb.toString() ;
 	}
 }

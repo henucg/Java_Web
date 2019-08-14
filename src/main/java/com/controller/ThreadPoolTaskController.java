@@ -50,4 +50,21 @@ public class ThreadPoolTaskController {
 
 		return "多线程执行完成:</br>" + s ;
 	}
+
+	/**
+	 * 执行多线程
+	 * @return
+	 */
+	@RequestMapping(value="/thread/run2")
+	@ResponseBody
+	public String runThread2(){
+		String s = "" ;
+		try{
+			s = threadPoolTaskService.testRunThread2(1000) ;
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+
+		return "多线程执行完成:</br>" + s ;
+	}
 }
