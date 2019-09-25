@@ -11,6 +11,7 @@ public class TransactionalServiceImpl implements TransactionalService {
 	@Transactional(rollbackFor = Exception.class)
 	public String testA(boolean flag) throws Exception {
 		testB(true);
+		
 		return null ;
 	}
 
